@@ -1,3 +1,6 @@
+use egui::{Response, Widget};
+use egui_phosphor::bold as ph;
+
 #[derive(Clone)]
 pub struct WindowFrame {
     title: String,
@@ -139,72 +142,57 @@ fn title_bar_ui(ui: &mut egui::Ui, title_bar_rect: eframe::epaint::Rect, title: 
 }
 
 fn close_maximize_minimize(ui: &mut egui::Ui) {
-    use egui::{Button, RichText};
-
-    let button_height = 20.0;
-
-    let close_response = ui
-        .add(
-            Button::new(
-                RichText::new(egui_phosphor::bold::X)
-                    .size(button_height)
-                    .strong()
-            )
-            .frame(true)
-            .fill(egui::Color32::TRANSPARENT)
-        )
-        .on_hover_text("Close the window");
+    let close_response = ui.add(WindowButton::new(ph::X, "Close window"));
     if close_response.clicked() {
         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
     }
 
     let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
     if is_maximized {
-        let maximized_response = ui
-            .add(
-                Button::new(
-                    RichText::new(egui_phosphor::bold::ARROWS_IN)
-                        .size(button_height)
-                        .strong()
-                )
-                .frame(true)
-                .fill(egui::Color32::TRANSPARENT)
-            )
-            .on_hover_text("Restore window");
+        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_IN, "Restore window"));
         if maximized_response.clicked() {
-            ui.ctx()
-                .send_viewport_cmd(egui::ViewportCommand::Maximized(false));
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(false));
         }
     } else {
-        let maximized_response = ui
-            .add(
-                Button::new(
-                    RichText::new(egui_phosphor::bold::ARROWS_OUT)
-                        .size(button_height)
-                        .strong()
-                )
-                .frame(true)
-                .fill(egui::Color32::TRANSPARENT)
-            )
-            .on_hover_text("Maximize window");
+        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_OUT, "Maximize window"));
         if maximized_response.clicked() {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(true));
         }
     }
 
-    let minimized_response = ui
-        .add(
-            Button::new(
-                RichText::new(egui_phosphor::bold::MINUS)
-                    .size(button_height)
+    let minimized_response = ui.add(WindowButton::new(ph::MINUS, "Minimize window"));
+    if minimized_response.clicked() {
+        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+    }
+}
+
+pub struct WindowButton {
+    icon: egui::RichText,
+    tooltip: &'static str,
+}
+
+impl WindowButton {
+    pub const BUTTON_HEIGHT: f32 = 20.0;
+
+    pub fn new(icon: impl Into<egui::RichText>, tooltip: &'static str) -> Self {
+        WindowButton {
+            icon: icon.into(),
+            tooltip,
+        }
+    }
+}
+
+impl Widget for WindowButton {
+    fn ui(self, ui: &mut egui::Ui) -> Response {
+        ui.add(
+            egui::Button::new(
+                self.icon
+                    .size(WindowButton::BUTTON_HEIGHT)
                     .strong()
             )
             .frame(true)
             .fill(egui::Color32::TRANSPARENT)
         )
-        .on_hover_text("Minimize the window");
-
-    if minimized_response.clicked() {
-        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+        .on_hover_text(self.tooltip)
     }
 }

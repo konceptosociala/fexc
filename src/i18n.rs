@@ -9,10 +9,16 @@ pub enum Language {
     Ukrainian,
 }
 
-const EN: &str = include_str!("en.toml");
-const UK: &str = include_str!("uk.toml");
+const EN: &str = include_str!("../assets/i18n/en.toml");
+const UK: &str = include_str!("../assets/i18n/uk.toml");
 
 pub struct I18n(HashMap<Language, toml::Table>);
+
+impl Default for I18n {
+    fn default() -> Self {
+        I18n::new()
+    }
+}
 
 impl I18n {
     pub fn new() -> Self {

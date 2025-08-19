@@ -1,35 +1,64 @@
 use std::sync::Arc;
-
+use egui_phosphor::bold as ph;
+use catppuccin_egui::Theme as CatppuccinTheme;
 use crate::{
-    config::Config, i18n::I18n, plugin::Plugin, window_frame
+    config::Config, 
+    fonts, 
+    i18n::I18n, 
+    plugin::Plugin,
+    widgets::{
+        toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
+    },
 };
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Page {
+    #[default]
+    Project,
+    Search,
+    Plugins,
+    Settings,
+}
+
+#[derive(Default)]
 pub struct Fexc {
     config: Config,
     i18n: I18n,
+    current_page: Page,
     _plugins: Vec<Box<dyn Plugin>>,
 }
 
 impl Fexc {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         set_themes(cc);
-        add_phosphor_icons(cc);
+        set_fonts(cc);
         
         let config = Config::load().unwrap_or_else(|e| {
             log::error!("{e}");
-
             Config::default()
         });
 
         Fexc {
             config,
-            i18n: I18n::new(),
-            _plugins: Vec::new(),
+            ..Default::default()
         }
     }
 
     pub fn i18n(&self, key: &str) -> &str {
         &self.i18n[(&self.config.language, key)]
+    }
+
+    pub fn window_name(&self) -> String {
+        self.config.current_project.as_ref()
+            .and_then(|p| p.to_str().map(|s| s.to_owned()))
+            .unwrap_or_else(|| "~/".to_owned())
+    }
+
+    pub fn _get_catppuccin_theme(&self) -> &'static CatppuccinTheme {
+        match self.config.theme {
+            egui::Theme::Light => &catppuccin_egui::LATTE,
+            egui::Theme::Dark => &catppuccin_egui::MACCHIATO,
+        }
     }
 }
 
@@ -37,12 +66,31 @@ impl eframe::App for Fexc {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.set_theme(self.config.theme);
 
-        window_frame::WindowFrame::new("~/").show(ctx, |ui| {   
-            egui::SidePanel::left("files").show_inside(ui, |sidebar_ui| {
-                sidebar_ui.label("Sidebar content here");
+        WindowFrame::new(&self.window_name()).show(ctx, |ui| {   
+            egui::SidePanel::left("sidebar")
+                .min_width(256.0)
+                .resizable(true)
+                .show_inside(ui, |sidebar| 
+            {
+                sidebar.horizontal(|toolbar| {
+                    toolbar.add(ToolbarHeading::new("λ"));                    
+
+                    toolbar.separator();
+
+                    toolbar.add(ToolbarButton::new(ph::FOLDER_OPEN, "Project", &mut self.current_page, Page::Project));
+                    toolbar.add(ToolbarButton::new(ph::MAGNIFYING_GLASS, "Search", &mut self.current_page, Page::Search));
+                    toolbar.add(ToolbarButton::new(ph::PUZZLE_PIECE, "Plugins", &mut self.current_page, Page::Plugins));
+                    toolbar.add(ToolbarButton::new(ph::GEAR, "Settings", &mut self.current_page, Page::Settings));
+                });
+
+                sidebar.separator();
             });
 
-            egui::TopBottomPanel::bottom("terminal").resizable(true).show_inside(ui, |bottom_ui| {
+            egui::TopBottomPanel::bottom("terminal")
+                .min_height(128.0)
+                .resizable(true)
+                .show_inside(ui, |bottom_ui| 
+            {
                 bottom_ui.label("Terminal content here");
             });
 
@@ -75,9 +123,28 @@ impl eframe::App for Fexc {
     }
 }
 
-fn add_phosphor_icons(cc: &eframe::CreationContext<'_>) {
+fn set_fonts(cc: &eframe::CreationContext<'_>) {
     let mut fonts = egui::FontDefinitions::default();
+    fonts.font_data.insert(
+        "DSE".to_owned(),
+        Arc::new(egui::FontData::from_static(fonts::DSE_TYPEWRITER)),
+    );
+    fonts.font_data.insert(
+        "FSEX".to_owned(),
+        Arc::new(egui::FontData::from_static(fonts::FIXEDSYS_EXCELSIOR)),
+    );
+
+    fonts.families.get_mut(&egui::FontFamily::Monospace)
+        .unwrap()
+        .insert(0, "FSEX".to_owned());
+
+    fonts.families
+        .entry(egui::FontFamily::Name("heading".into()))
+        .or_insert_with(Vec::new)
+        .insert(0, "DSE".to_owned());
+
     egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+
     cc.egui_ctx.set_fonts(fonts);
 }
 

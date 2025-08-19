@@ -2,9 +2,10 @@
 
 mod app;
 mod config;
+mod fonts;
 mod i18n;
 mod plugin;
-mod window_frame;
+mod widgets;
 
 use app::Fexc;
 
