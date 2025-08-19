@@ -142,25 +142,25 @@ fn title_bar_ui(ui: &mut egui::Ui, title_bar_rect: eframe::epaint::Rect, title: 
 }
 
 fn close_maximize_minimize(ui: &mut egui::Ui) {
-    let close_response = ui.add(WindowButton::new(ph::X, "Close window"));
+    let close_response = ui.add(WindowButton::new(ph::X));
     if close_response.clicked() {
         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
     }
 
     let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
     if is_maximized {
-        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_IN, "Restore window"));
+        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_IN));
         if maximized_response.clicked() {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(false));
         }
     } else {
-        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_OUT, "Maximize window"));
+        let maximized_response = ui.add(WindowButton::new(ph::ARROWS_OUT));
         if maximized_response.clicked() {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::Maximized(true));
         }
     }
 
-    let minimized_response = ui.add(WindowButton::new(ph::MINUS, "Minimize window"));
+    let minimized_response = ui.add(WindowButton::new(ph::MINUS));
     if minimized_response.clicked() {
         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Minimized(true));
     }
@@ -168,16 +168,14 @@ fn close_maximize_minimize(ui: &mut egui::Ui) {
 
 pub struct WindowButton {
     icon: egui::RichText,
-    tooltip: &'static str,
 }
 
 impl WindowButton {
     pub const BUTTON_HEIGHT: f32 = 20.0;
 
-    pub fn new(icon: impl Into<egui::RichText>, tooltip: &'static str) -> Self {
+    pub fn new(icon: impl Into<egui::RichText>) -> Self {
         WindowButton {
             icon: icon.into(),
-            tooltip,
         }
     }
 }
@@ -193,6 +191,5 @@ impl Widget for WindowButton {
             .frame(true)
             .fill(egui::Color32::TRANSPARENT)
         )
-        .on_hover_text(self.tooltip)
     }
 }

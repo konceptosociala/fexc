@@ -1,1 +1,15 @@
+# Fexc Ukrainian translation
+
 debug = "Я люблю Haskell!"
+new_project = "Новий проект"
+file = "Файл"
+quit = "Вихід"
+project = "Проєкт"
+search = "Пошук"
+plugins = "Плагіни"
+settings = "Налаштування"
+theme = "Тема"
+dark = "Темна"
+light = "Світла"
+language = "Мова"
+no_project_open = "Немає відкритого проєкту"

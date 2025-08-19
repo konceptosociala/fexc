@@ -10,6 +10,7 @@ use crate::i18n::Language;
 pub struct Config {
     pub theme: egui::Theme,
     pub language: Language,
+    pub editor_font_size: u8,
 }
 
 impl Config {
@@ -107,6 +108,7 @@ impl Default for Config {
         Config {
             language: Language::English,
             theme: egui::Theme::Dark,
+            editor_font_size: 16,
         }
     }
 }

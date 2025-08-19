@@ -2,7 +2,7 @@ use crate::app::Page;
 
 pub struct ToolbarButton<'a> {
     icon: egui::RichText,
-    tooltip: &'static str,
+    tooltip: &'a str,
     page: &'a mut Page,
     action_page: Page,
 }
@@ -13,7 +13,7 @@ impl<'a> ToolbarButton<'a> {
 
     pub fn new(
         icon: impl Into<egui::RichText>, 
-        tooltip: &'static str,
+        tooltip: &'a str,
         page: &'a mut Page,
         action_page: Page,
     ) -> Self {

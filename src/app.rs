@@ -7,7 +7,14 @@ use crate::{
     i18n::I18n, 
     plugin::Plugin,
     widgets::{
-        pages::SettingsPage, toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
+        pages::{
+            settings::SettingsPage,
+            project::ProjectPage,
+            search::SearchPage,
+            plugins::PluginsPage,
+        }, 
+        toolbar::{ToolbarButton, ToolbarHeading}, 
+        window_frame::WindowFrame
     },
 };
 
@@ -53,7 +60,7 @@ impl Fexc {
     pub fn window_name(&self) -> String {
         self.current_project.as_ref()
             .and_then(|p| p.to_str().map(|s| s.to_owned()))
-            .unwrap_or_else(|| "New project".to_owned())
+            .unwrap_or_else(|| self.i18n("new_project").to_owned())
     }
 
     pub fn _get_catppuccin_theme(&self) -> &'static CatppuccinTheme {
@@ -72,8 +79,8 @@ impl eframe::App for Fexc {
             egui::MenuBar::new()
                 .ui(ui, |ui| 
             {
-                ui.menu_button("File", |ui| {
-                    if ui.button("Quit").clicked() {
+                ui.menu_button(self.i18n("file"), |ui| {
+                    if ui.button(self.i18n("quit")).clicked() {
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 });
@@ -86,28 +93,33 @@ impl eframe::App for Fexc {
                 .resizable(true)
                 .show_inside(ui, |sidebar| 
             {
+                let project_label = self.i18n("project").to_owned();
+                let search_label = self.i18n("search").to_owned();
+                let plugins_label = self.i18n("plugins").to_owned();
+                let settings_label = self.i18n("settings").to_owned();
+
                 sidebar.horizontal(|toolbar| {
                     toolbar.add(ToolbarHeading::new("λ"));                    
 
                     toolbar.separator();
 
-                    toolbar.add(ToolbarButton::new(ph::FOLDER_OPEN, "Project", &mut self.current_page, Page::Project));
-                    toolbar.add(ToolbarButton::new(ph::MAGNIFYING_GLASS, "Search", &mut self.current_page, Page::Search));
-                    toolbar.add(ToolbarButton::new(ph::PUZZLE_PIECE, "Plugins", &mut self.current_page, Page::Plugins));
-                    toolbar.add(ToolbarButton::new(ph::GEAR, "Settings", &mut self.current_page, Page::Settings));
+                    toolbar.add(ToolbarButton::new(ph::FOLDER_OPEN, &project_label, &mut self.current_page, Page::Project));
+                    toolbar.add(ToolbarButton::new(ph::MAGNIFYING_GLASS, &search_label, &mut self.current_page, Page::Search));
+                    toolbar.add(ToolbarButton::new(ph::PUZZLE_PIECE, &plugins_label, &mut self.current_page, Page::Plugins));
+                    toolbar.add(ToolbarButton::new(ph::GEAR, &settings_label, &mut self.current_page, Page::Settings));
                 });
 
                 sidebar.separator();
 
                 match self.current_page {
                     Page::Project => {
-                        // Show project-specific UI
+                        sidebar.add(ProjectPage::new(self));
                     }
                     Page::Search => {
-                        // Show search-specific UI
+                        sidebar.add(SearchPage::new(self));
                     }
                     Page::Plugins => {
-                        // Show plugins-specific UI
+                        sidebar.add(PluginsPage::new(self));
                     }
                     Page::Settings => {
                         sidebar.add(SettingsPage::new(self));
@@ -120,7 +132,7 @@ impl eframe::App for Fexc {
                 .resizable(true)
                 .show_inside(ui, |bottom_ui| 
             {
-                bottom_ui.label("Terminal content here");
+                bottom_ui.label("<terminal>");
             });
 
             // Editor
@@ -166,7 +178,7 @@ fn set_themes(cc: &eframe::CreationContext<'_>) {
             style.interaction.selectable_labels = false;
             style.text_styles = style.text_styles.iter().map(|(k, v)| {
                 let mut new_v = v.clone();
-                new_v.size *= 1.5;
+                new_v.size *= 1.3;
 
                 (k.clone(), new_v)
             }).collect();
@@ -179,7 +191,7 @@ fn set_themes(cc: &eframe::CreationContext<'_>) {
             style.interaction.selectable_labels = false;
             style.text_styles = style.text_styles.iter().map(|(k, v)| {
                 let mut new_v = v.clone();
-                new_v.size *= 1.5;
+                new_v.size *= 1.3;
 
                 (k.clone(), new_v)
             }).collect();
