@@ -1,5 +1,9 @@
+#![deny(clippy::disallowed_methods)]
+
 mod app;
 mod config;
+mod i18n;
+mod plugin;
 mod window_frame;
 
 use app::Fexc;
@@ -7,6 +11,11 @@ use app::Fexc;
 const TITLE: &str = concat!("Fexc v", env!("CARGO_PKG_VERSION"));
 
 fn main() {
+    pretty_env_logger::formatted_builder()
+        .filter(None, log::LevelFilter::Info)
+        .filter(Some("sctk_adwaita"), log::LevelFilter::Off)
+        .init();
+
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1024.0, 720.0])
