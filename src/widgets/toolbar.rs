@@ -26,7 +26,7 @@ impl<'a> ToolbarButton<'a> {
     }
 }
 
-impl<'a> egui::Widget for ToolbarButton<'a> {
+impl egui::Widget for ToolbarButton<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let response = ui.add_sized(
             egui::vec2(ToolbarButton::BUTTON_SIZE, ToolbarButton::BUTTON_SIZE),

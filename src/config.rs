@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf};
+use std::io;
 
 use fs_err as fs;
 use serde::{Deserialize, Serialize};
@@ -10,8 +10,6 @@ use crate::i18n::Language;
 pub struct Config {
     pub theme: egui::Theme,
     pub language: Language,
-    pub open_files: Vec<PathBuf>,
-    pub current_project: Option<PathBuf>,
 }
 
 impl Config {
@@ -109,8 +107,6 @@ impl Default for Config {
         Config {
             language: Language::English,
             theme: egui::Theme::Dark,
-            open_files: Vec::new(),
-            current_project: None,
         }
     }
 }

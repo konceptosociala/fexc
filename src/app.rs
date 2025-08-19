@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 use egui_phosphor::bold as ph;
 use catppuccin_egui::Theme as CatppuccinTheme;
 use crate::{
@@ -7,7 +7,7 @@ use crate::{
     i18n::I18n, 
     plugin::Plugin,
     widgets::{
-        toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
+        pages::SettingsPage, toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
     },
 };
 
@@ -22,10 +22,12 @@ pub enum Page {
 
 #[derive(Default)]
 pub struct Fexc {
-    config: Config,
-    i18n: I18n,
-    current_page: Page,
-    _plugins: Vec<Box<dyn Plugin>>,
+    pub config: Config,
+    pub i18n: I18n,
+    pub current_page: Page,
+    pub open_files: Vec<PathBuf>,
+    pub current_project: Option<PathBuf>,
+    pub _plugins: Vec<Box<dyn Plugin>>,
 }
 
 impl Fexc {
@@ -49,9 +51,9 @@ impl Fexc {
     }
 
     pub fn window_name(&self) -> String {
-        self.config.current_project.as_ref()
+        self.current_project.as_ref()
             .and_then(|p| p.to_str().map(|s| s.to_owned()))
-            .unwrap_or_else(|| "~/".to_owned())
+            .unwrap_or_else(|| "New project".to_owned())
     }
 
     pub fn _get_catppuccin_theme(&self) -> &'static CatppuccinTheme {
@@ -67,6 +69,18 @@ impl eframe::App for Fexc {
         ctx.set_theme(self.config.theme);
 
         WindowFrame::new(&self.window_name()).show(ctx, |ui| {   
+            egui::MenuBar::new()
+                .ui(ui, |ui| 
+            {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Quit").clicked() {
+                        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+            });
+
+            ui.separator();
+
             egui::SidePanel::left("sidebar")
                 .min_width(256.0)
                 .resizable(true)
@@ -84,6 +98,21 @@ impl eframe::App for Fexc {
                 });
 
                 sidebar.separator();
+
+                match self.current_page {
+                    Page::Project => {
+                        // Show project-specific UI
+                    }
+                    Page::Search => {
+                        // Show search-specific UI
+                    }
+                    Page::Plugins => {
+                        // Show plugins-specific UI
+                    }
+                    Page::Settings => {
+                        sidebar.add(SettingsPage::new(self));
+                    }
+                };
             });
 
             egui::TopBottomPanel::bottom("terminal")
@@ -94,25 +123,7 @@ impl eframe::App for Fexc {
                 bottom_ui.label("Terminal content here");
             });
 
-            ui.heading(self.i18n("debug"));
-            ui.label("This is a label.");
-            ui.separator();
-            if ui.button("Click me!").clicked() {
-                ui.label("Button clicked!");
-            }
-            ui.horizontal(|ui| {
-                ui.label("Horizontal layout:");
-                ui.text_edit_singleline(&mut String::from("Editable text"));
-            });
-            ui.collapsing("Collapsible section", |ui| {
-                ui.label("Inside the collapsible section.");
-            });
-            ui.checkbox(&mut true, "Sample checkbox");
-            ui.radio_value(&mut 1, 1, "Radio 1");
-            ui.radio_value(&mut 1, 2, "Radio 2");
-            ui.add(egui::Slider::new(&mut 42.0, 0.0..=100.0).text("Slider"));
-            ui.text_edit_multiline(&mut String::from("Multiline\nText"));
-            ui.hyperlink("https://github.com/");
+            // Editor
         });
     }
 
