@@ -1,7 +1,7 @@
 # Fexc Ukrainian translation
 
 debug = "Я люблю Haskell!"
-new_project = "Новий проект"
+empty_project = "Порожній проєкт"
 file = "Файл"
 quit = "Вихід"
 project = "Проєкт"
@@ -13,3 +13,4 @@ dark = "Темна"
 light = "Світла"
 language = "Мова"
 no_project_open = "Немає відкритого проєкту"
+editor_font_size = "Розмір шрифту редактора"

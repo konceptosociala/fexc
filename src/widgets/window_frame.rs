@@ -35,7 +35,7 @@ impl WindowFrame {
         egui::CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
             let app_rect = ui.max_rect();
 
-            let resize_margin = 12.0;
+            let resize_margin = 4.0;
             let pointer_pos = ctx.input(|i| i.pointer.hover_pos());
             if let Some(pos) = pointer_pos {
                 let mut resize_dir = None;
@@ -62,13 +62,15 @@ impl WindowFrame {
                     cursor_icon = Some(egui::CursorIcon::ResizeEast);
                 }
 
-                if let Some(icon) = cursor_icon {
-                    ctx.output_mut(|o| o.cursor_icon = icon);
-                }
+                if !is_maximized {
+                    if let Some(icon) = cursor_icon {
+                        ctx.output_mut(|o| o.cursor_icon = icon);
+                    }
 
-                if let Some(dir) = resize_dir {
-                    if ui.input(|i| i.pointer.primary_down()) {
-                        ctx.send_viewport_cmd(egui::ViewportCommand::BeginResize(dir));
+                    if let Some(dir) = resize_dir {
+                        if ui.input(|i| i.pointer.primary_down()) {
+                            ctx.send_viewport_cmd(egui::ViewportCommand::BeginResize(dir));
+                        }
                     }
                 }
             }
@@ -84,8 +86,7 @@ impl WindowFrame {
                 let mut rect = app_rect;
                 rect.min.y = title_bar_rect.max.y;
                 rect
-            }
-            .shrink(4.0);
+            };
 
             let mut content_ui = ui.new_child(egui::UiBuilder::new().max_rect(content_rect));
             add_contents(&mut content_ui);

@@ -1,7 +1,7 @@
 # Fexc English translation
 
 debug = "I love Haskell!"
-new_project = "New project"
+empty_project = "Empty project"
 file = "File"
 quit = "Quit"
 project = "Project"
@@ -13,3 +13,4 @@ dark = "Dark"
 light = "Light"
 language = "Language"
 no_project_open = "No project open"
+editor_font_size = "Editor Font Size"

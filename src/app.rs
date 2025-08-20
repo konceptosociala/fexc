@@ -7,16 +7,24 @@ use crate::{
     i18n::I18n, 
     plugin::Plugin,
     widgets::{
-        pages::{
-            settings::SettingsPage,
-            project::ProjectPage,
-            search::SearchPage,
-            plugins::PluginsPage,
-        }, 
-        toolbar::{ToolbarButton, ToolbarHeading}, 
-        window_frame::WindowFrame
+        editor::CodeEditor, pages::{
+            plugins::PluginsPage, project::ProjectPage, search::SearchPage, settings::SettingsPage
+        }, toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
     },
 };
+
+const HASKELL_DEMO: &str = 
+r#"-- Custom map function
+myMap :: (a -> b) -> [a] -> [b]
+myMap _ [] = []
+myMap f (x:xs) = f x : myMap f xs
+
+-- Using myMap with an anonymous function
+mappedList = myMap (\x -> x * 2) [1, 2, 3] -- mappedList will be [2, 4, 6]
+
+-- Using foldl1 (fold left, using the first element as the initial accumulator)
+sumList = foldl1 (+) [1, 2, 3, 4, 5] -- sumList will be 15
+"#;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Page {
@@ -35,6 +43,8 @@ pub struct Fexc {
     pub open_files: Vec<PathBuf>,
     pub current_project: Option<PathBuf>,
     pub _plugins: Vec<Box<dyn Plugin>>,
+
+    pub code: String,
 }
 
 impl Fexc {
@@ -49,6 +59,7 @@ impl Fexc {
 
         Fexc {
             config,
+            code: HASKELL_DEMO.to_owned(),
             ..Default::default()
         }
     }
@@ -60,7 +71,7 @@ impl Fexc {
     pub fn window_name(&self) -> String {
         self.current_project.as_ref()
             .and_then(|p| p.to_str().map(|s| s.to_owned()))
-            .unwrap_or_else(|| self.i18n("new_project").to_owned())
+            .unwrap_or_else(|| self.i18n("empty_project").to_owned())
     }
 
     pub fn _get_catppuccin_theme(&self) -> &'static CatppuccinTheme {
@@ -69,11 +80,30 @@ impl Fexc {
             egui::Theme::Dark => &catppuccin_egui::MACCHIATO,
         }
     }
+
+    pub fn set_editor_font_size(&mut self, ctx: &egui::Context) {
+        ctx.options_mut(|opts| {
+            opts.light_style = Arc::new({
+                let mut style = (*opts.light_style).clone();
+                let monospace = style.text_styles.get_mut(&egui::TextStyle::Monospace).unwrap();
+                monospace.size = self.config.editor_font_size as f32;
+                style
+            });
+
+            opts.dark_style = Arc::new({
+                let mut style = (*opts.dark_style).clone();
+                let monospace = style.text_styles.get_mut(&egui::TextStyle::Monospace).unwrap();
+                monospace.size = self.config.editor_font_size as f32;
+                style
+            });
+        });
+    }
 }
 
 impl eframe::App for Fexc {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ctx.set_theme(self.config.theme);
+        self.set_editor_font_size(ctx);
 
         WindowFrame::new(&self.window_name()).show(ctx, |ui| {   
             egui::MenuBar::new()
@@ -84,9 +114,13 @@ impl eframe::App for Fexc {
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 });
-            });
 
-            ui.separator();
+                ui.menu_button(self.i18n("file"), |ui| {
+                    if ui.button(self.i18n("quit")).clicked() {
+                        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+            });
 
             egui::SidePanel::left("sidebar")
                 .min_width(256.0)
@@ -135,7 +169,7 @@ impl eframe::App for Fexc {
                 bottom_ui.label("<terminal>");
             });
 
-            // Editor
+            ui.add(CodeEditor::new(self));
         });
     }
 
@@ -182,6 +216,7 @@ fn set_themes(cc: &eframe::CreationContext<'_>) {
 
                 (k.clone(), new_v)
             }).collect();
+
             catppuccin_egui::set_style_theme(&mut style, catppuccin_egui::LATTE);
             style
         });

@@ -60,6 +60,7 @@ impl ToolbarHeading {
 
 impl egui::Widget for ToolbarHeading {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.add_space(4.0);
         ui.add(
             egui::Label::new(
                 self.text.clone()
