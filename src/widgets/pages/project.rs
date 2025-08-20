@@ -22,7 +22,10 @@ impl egui::Widget for ProjectPage<'_> {
                     .family(egui::FontFamily::Monospace)
             ));
         } else {
-            ui.label(self.app.i18n("no_project_open"));
+            ui.vertical_centered(|ui| {
+                ui.add_space(ui.available_height() / 2.0 - 20.0); // Adjust for vertical centering
+                ui.label(self.app.i18n("no_project_open"));
+            });
         }
 
         ui.label("")

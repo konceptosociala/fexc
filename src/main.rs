@@ -15,6 +15,7 @@ fn main() {
     pretty_env_logger::formatted_builder()
         .filter(None, log::LevelFilter::Info)
         .filter(Some("sctk_adwaita"), log::LevelFilter::Off)
+        .filter(Some("calloop"), log::LevelFilter::Off)
         .init();
 
     let options = eframe::NativeOptions {

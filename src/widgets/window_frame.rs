@@ -1,4 +1,3 @@
-use egui::{Response, Widget};
 use egui_phosphor::bold as ph;
 
 #[derive(Clone)]
@@ -181,8 +180,8 @@ impl WindowButton {
     }
 }
 
-impl Widget for WindowButton {
-    fn ui(self, ui: &mut egui::Ui) -> Response {
+impl egui::Widget for WindowButton {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add(
             egui::Button::new(
                 self.icon

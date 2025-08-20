@@ -1,15 +1,21 @@
 use std::{path::PathBuf, sync::Arc};
 use egui_phosphor::bold as ph;
-use catppuccin_egui::Theme as CatppuccinTheme;
 use crate::{
     config::Config, 
     fonts, 
     i18n::I18n, 
     plugin::Plugin,
     widgets::{
-        editor::CodeEditor, pages::{
-            plugins::PluginsPage, project::ProjectPage, search::SearchPage, settings::SettingsPage
-        }, toolbar::{ToolbarButton, ToolbarHeading}, window_frame::WindowFrame
+        editor::CodeEditor, 
+        pages::{
+            plugins::PluginsPage, 
+            project::ProjectPage, 
+            search::SearchPage, 
+            settings::SettingsPage
+        }, 
+        toolbar::{ToolbarButton, ToolbarHeading}, 
+        window_frame::WindowFrame,
+        menubar::MenuBar,
     },
 };
 
@@ -74,13 +80,6 @@ impl Fexc {
             .unwrap_or_else(|| self.i18n("empty_project").to_owned())
     }
 
-    pub fn _get_catppuccin_theme(&self) -> &'static CatppuccinTheme {
-        match self.config.theme {
-            egui::Theme::Light => &catppuccin_egui::LATTE,
-            egui::Theme::Dark => &catppuccin_egui::MACCHIATO,
-        }
-    }
-
     pub fn set_editor_font_size(&mut self, ctx: &egui::Context) {
         ctx.options_mut(|opts| {
             opts.light_style = Arc::new({
@@ -105,16 +104,10 @@ impl eframe::App for Fexc {
         ctx.set_theme(self.config.theme);
         self.set_editor_font_size(ctx);
 
-        WindowFrame::new(&self.window_name()).show(ctx, |ui| {   
-            egui::MenuBar::new()
-                .ui(ui, |ui| 
+        WindowFrame::new(&self.window_name()).show(ctx, |ui| { 
+            MenuBar::new()
+                .show(ui, |ui| 
             {
-                ui.menu_button(self.i18n("file"), |ui| {
-                    if ui.button(self.i18n("quit")).clicked() {
-                        ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-                    }
-                });
-
                 ui.menu_button(self.i18n("file"), |ui| {
                     if ui.button(self.i18n("quit")).clicked() {
                         ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);

@@ -39,32 +39,95 @@ impl egui::Widget for CodeEditor<'_> {
             })
         };
 
+        
         egui::Frame::new()
-            .fill(match self.app.config.theme {
-                egui::Theme::Light => Self::LIGHT_BG_COLOR,
-                egui::Theme::Dark => Self::DARK_BG_COLOR,
+            .inner_margin(egui::Margin {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 4,
             })
             .stroke(egui::Stroke::NONE)
             .show(ui, |ui| 
         {
-            egui::ScrollArea::both()
+            egui::ScrollArea::vertical()
                 .auto_shrink([true; 2])
                 .show(ui, |ui| 
             {
-                ui.add(
-                    egui::TextEdit::multiline(code)
-                        .margin(egui::vec2(10.0, 10.0))
-                        .frame(false)
-                        .font(egui::TextStyle::Monospace)
-                        .code_editor()
-                        .desired_rows(rows as usize)
-                        .lock_focus(true)
-                        .desired_width(f32::INFINITY)
-                        .layouter(&mut layouter),
-                );
+                ui.horizontal_top(|ui| {
+                    numlines_show(ui, code, rows as usize, self.app.config.editor_font_size as f32);
+
+                    egui::Frame::new()
+                        .fill(match self.app.config.theme {
+                            egui::Theme::Light => Self::LIGHT_BG_COLOR,
+                            egui::Theme::Dark => Self::DARK_BG_COLOR,
+                        })
+                        .stroke(egui::Stroke::NONE)
+                        .show(ui, |ui| 
+                    {
+                        egui::ScrollArea::horizontal()
+                            .auto_shrink([true; 2])
+                            .show(ui, |ui| 
+                        {
+                            ui.add(
+                                egui::TextEdit::multiline(code)
+                                    .margin(egui::vec2(10.0, 10.0))
+                                    .frame(false)
+                                    .font(egui::TextStyle::Monospace)
+                                    .code_editor()
+                                    .desired_rows(rows as usize)
+                                    .lock_focus(true)
+                                    .desired_width(f32::INFINITY)
+                                    .layouter(&mut layouter),
+                            );
+                        });
+                    });
+                });
             });
         });
 
         ui.label("")
     }
+}
+
+fn numlines_show(ui: &mut egui::Ui, text: &str, rows: usize, font_size: f32) {
+    let total = if text.ends_with('\n') || text.is_empty() {
+        text.lines().count() + 1
+    } else {
+        text.lines().count()
+    };
+
+    let max_indent = total
+        .to_string()
+        .len();
+    
+    let mut counter = (1..=total)
+        .map(|i| {
+            let num = i;
+            let label = num.to_string();
+            format!(
+                "{}{label}",
+                " ".repeat(max_indent.saturating_sub(label.len()))
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    let width = max_indent as f32 * font_size * 0.5;
+
+    ui.add(
+        egui::TextEdit::multiline(&mut counter)
+            .margin(egui::Margin {
+                left: 16,
+                right: 0,
+                top: 10,
+                bottom: 10,
+            })
+            .id_source("numlines")
+            .font(egui::TextStyle::Monospace)
+            .interactive(false)
+            .frame(false)
+            .desired_rows(rows)
+            .desired_width(width)
+    );
 }
